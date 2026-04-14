@@ -98,6 +98,13 @@ h1 {
   padding-bottom: 8px;
   border-bottom: 1px solid #f0f0f0;
 }
+.result-product-name {
+  font-size: 14px;
+  color: #1a1a1a;
+  font-weight: 600;
+  margin-bottom: 12px;
+  display: none;
+}
 .result-row {
   display: flex;
   justify-content: space-between;
@@ -114,6 +121,23 @@ h1 {
   border-top: 1px dashed #e8e8e8;
   margin: 8px 0;
 }
+.result-divider-bold {
+  border: none;
+  border-top: 2px solid #e8e8e8;
+  margin: 8px 0;
+}
+.result-subtotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 10px 0 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.result-subtotal .value.positive { color: #1677ff; }
+.result-subtotal .value.negative { color: #ff4d4f; }
+.result-subtotal .value.zero { color: #999; }
+
 .result-total {
   display: flex;
   justify-content: space-between;
@@ -140,10 +164,18 @@ h1 {
   <div class="subtitle">E-Commerce Profit Calculator</div>
 
   <div class="card">
-    <div class="card-title">基本信息 <span class="en">Basic Info</span></div>
+    <div class="card-title">产品信息 <span class="en">Product Info</span></div>
+    <div class="field">
+      <label>产品名称 <span class="en">Product Name</span> <span class="hint">（选填 Optional）</span></label>
+      <input type="text" id="productName" placeholder="输入产品名称 / Enter product name" oninput="calc()">
+    </div>
     <div class="field">
       <label>商品标价（元）<span class="en">Listed Price (CNY)</span></label>
       <input type="number" id="price" placeholder="输入商品链接标注价格 / Enter listed price" min="0" step="0.01" oninput="calc()">
+    </div>
+    <div class="field">
+      <label>产品成本价（元）<span class="en">Product Cost (CNY)</span></label>
+      <input type="number" id="costPrice" value="0" placeholder="输入产品成本价 / Enter product cost" min="0" step="0.01" oninput="calc()">
     </div>
   </div>
 
@@ -197,6 +229,7 @@ h1 {
 
   <div class="result-card">
     <div class="result-title">计算结果 <span class="en">Result</span></div>
+    <div class="result-product-name" id="r_productName"></div>
     <div class="result-row">
       <span class="label">商品标价 <span class="en">Listed Price</span></span>
       <span class="value" id="r_price">-</span>
@@ -222,8 +255,19 @@ h1 {
       <span class="value" id="r_influencer">-</span>
     </div>
     <hr class="result-divider">
+    <div class="result-subtotal">
+      <span class="label">实际收入金额 <span class="en">Net Revenue</span></span>
+      <span class="value zero" id="r_revenue">-</span>
+    </div>
+    <div class="profit-rate" id="r_revenueHint" style="margin-bottom: 4px;"></div>
+
+    <div class="result-row">
+      <span class="label">产品成本 <span class="en">Product Cost</span></span>
+      <span class="value" id="r_cost">-</span>
+    </div>
+    <hr class="result-divider-bold">
     <div class="result-total">
-      <span class="label">毛利润 <span class="en">Gross Profit</span></span>
+      <span class="label">实际利润 <span class="en">Actual Profit</span></span>
       <span class="value zero" id="r_profit">-</span>
     </div>
     <div class="profit-rate" id="r_profitRate"></div>
@@ -253,6 +297,16 @@ $('discountType').addEventListener('change', function() {
 
 function calc() {
   var price = num('price');
+  var productName = $('productName').value.trim();
+
+  // 显示产品名称
+  if (productName) {
+    $('r_productName').textContent = productName;
+    $('r_productName').style.display = 'block';
+  } else {
+    $('r_productName').style.display = 'none';
+  }
+
   if (!price) {
     $('r_price').textContent = '-';
     $('r_discount').textContent = '-';
@@ -260,6 +314,10 @@ function calc() {
     $('r_shipping').textContent = '-';
     $('r_platform').textContent = '-';
     $('r_influencer').textContent = '-';
+    $('r_revenue').textContent = '-';
+    $('r_revenue').className = 'value zero';
+    $('r_revenueHint').textContent = '';
+    $('r_cost').textContent = '-';
     $('r_profit').textContent = '-';
     $('r_profit').className = 'value zero';
     $('r_profitRate').textContent = '';
@@ -281,8 +339,16 @@ function calc() {
   var influencerRate = num('influencerRate') / 100;
   var influencer = price * influencerRate;
 
-  var profit = price - discount - tax - shipping - platform - influencer;
+  // 实际收入金额（平台到账）
+  var revenue = price - discount - tax - shipping - platform - influencer;
 
+  // 产品成本
+  var cost = num('costPrice');
+
+  // 实际利润
+  var profit = revenue - cost;
+
+  // 显示明细
   $('r_price').textContent = fmt(price) + ' CNY';
   $('r_discount').textContent = '- ' + fmt(discount) + ' CNY';
   $('r_tax').textContent = '- ' + fmt(tax) + ' CNY';
@@ -290,6 +356,21 @@ function calc() {
   $('r_platform').textContent = '- ' + fmt(platform) + ' CNY';
   $('r_influencer').textContent = '- ' + fmt(influencer) + ' CNY';
 
+  // 实际收入
+  $('r_revenue').textContent = fmt(revenue) + ' CNY';
+  if (revenue > 0) {
+    $('r_revenue').className = 'value positive';
+  } else if (revenue < 0) {
+    $('r_revenue').className = 'value negative';
+  } else {
+    $('r_revenue').className = 'value zero';
+  }
+  $('r_revenueHint').textContent = '平台到账金额 Amount received from platform';
+
+  // 产品成本
+  $('r_cost').textContent = '- ' + fmt(cost) + ' CNY';
+
+  // 实际利润
   $('r_profit').textContent = fmt(profit) + ' CNY';
   if (profit > 0) {
     $('r_profit').className = 'value positive';
@@ -300,7 +381,7 @@ function calc() {
   }
 
   var rate = (profit / price * 100).toFixed(1);
-  $('r_profitRate').textContent = '毛利率 Gross Margin: ' + rate + '%';
+  $('r_profitRate').textContent = '实际利润率 Profit Margin: ' + rate + '%';
 }
 </script>
 </body>
