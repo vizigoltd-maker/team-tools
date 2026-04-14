@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profit Calculator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container {
+  max-width: 540px;
+  margin: 0 auto;
+}
+h1 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 4px;
+  color: #1a1a1a;
+}
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 20px;
+}
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.en { color: #aaa; font-weight: normal; font-size: 12px; margin-left: 4px; }
+.card-title .en { font-size: 13px; }
+.field {
+  margin-bottom: 14px;
+}
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block;
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 6px;
+}
+.field label .hint {
+  color: #999;
+  font-weight: normal;
+  font-size: 12px;
+}
+.field input, .field select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  font-size: 15px;
+  color: #333;
+  background: #fafafa;
+  transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: #4096ff;
+  background: #fff;
+}
+.inline-fields {
+  display: flex;
+  gap: 10px;
+}
+.inline-fields .field { flex: 1; }
+.inline-fields .field.narrow { flex: 0 0 140px; }
+
+.result-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.result-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  font-size: 14px;
+  color: #666;
+}
+.result-row .label { color: #888; }
+.result-row .value { font-weight: 500; color: #333; white-space: nowrap; }
+.result-row .value.negative { color: #ff4d4f; }
+.result-divider {
+  border: none;
+  border-top: 1px dashed #e8e8e8;
+  margin: 8px 0;
+}
+.result-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 12px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+.result-total .value.positive { color: #52c41a; }
+.result-total .value.negative { color: #ff4d4f; }
+.result-total .value.zero { color: #999; }
+
+.profit-rate {
+  text-align: right;
+  font-size: 13px;
+  color: #999;
+  margin-top: 4px;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>电商利润计算器</h1>
+  <div class="subtitle">E-Commerce Profit Calculator</div>
+
+  <div class="card">
+    <div class="card-title">基本信息 <span class="en">Basic Info</span></div>
+    <div class="field">
+      <label>商品标价（元）<span class="en">Listed Price (CNY)</span></label>
+      <input type="number" id="price" placeholder="输入商品链接标注价格 / Enter listed price" min="0" step="0.01" oninput="calc()">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">活动优惠 <span class="en">Promotion Discount</span></div>
+    <div class="inline-fields">
+      <div class="field narrow">
+        <label>优惠类型 <span class="en">Type</span></label>
+        <select id="discountType" onchange="calc()">
+          <option value="fixed">固定金额 Fixed</option>
+          <option value="percent">百分比 %</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>优惠值 <span class="en">Value</span> <span class="hint" id="discountHint">（元 CNY）</span></label>
+        <input type="number" id="discountValue" value="0" min="0" step="0.01" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">费用明细 <span class="en">Cost Breakdown</span></div>
+    <div class="field">
+      <label>关税税率 <span class="en">Customs Tax Rate</span></label>
+      <div class="inline-fields">
+        <div class="field narrow">
+          <select id="taxType" onchange="onTaxTypeChange(); calc()">
+            <option value="9.2">9.2%</option>
+            <option value="23.4">23.4%</option>
+            <option value="custom">自定义 Custom</option>
+          </select>
+        </div>
+        <div class="field">
+          <input type="number" id="taxRate" value="9.2" min="0" max="100" step="0.1" oninput="calc()" disabled>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <label>运费（元）<span class="en">Shipping (CNY)</span> <span class="hint">默认9元/单 Default 9/order</span></label>
+      <input type="number" id="shipping" value="9" min="0" step="0.01" oninput="calc()">
+    </div>
+    <div class="field">
+      <label>平台佣金（%）<span class="en">Platform Commission</span> <span class="hint">默认5% Default 5%</span></label>
+      <input type="number" id="platformRate" value="5" min="0" max="100" step="0.1" oninput="calc()">
+    </div>
+    <div class="field">
+      <label>达人佣金（%）<span class="en">Influencer Commission</span></label>
+      <input type="number" id="influencerRate" value="0" min="0" max="100" step="0.1" oninput="calc()">
+    </div>
+  </div>
+
+  <div class="result-card">
+    <div class="result-title">计算结果 <span class="en">Result</span></div>
+    <div class="result-row">
+      <span class="label">商品标价 <span class="en">Listed Price</span></span>
+      <span class="value" id="r_price">-</span>
+    </div>
+    <div class="result-row">
+      <span class="label">活动优惠 <span class="en">Discount</span></span>
+      <span class="value" id="r_discount">-</span>
+    </div>
+    <div class="result-row">
+      <span class="label">关税 <span class="en">Tax</span></span>
+      <span class="value" id="r_tax">-</span>
+    </div>
+    <div class="result-row">
+      <span class="label">运费 <span class="en">Shipping</span></span>
+      <span class="value" id="r_shipping">-</span>
+    </div>
+    <div class="result-row">
+      <span class="label">平台佣金 <span class="en">Platform</span></span>
+      <span class="value" id="r_platform">-</span>
+    </div>
+    <div class="result-row">
+      <span class="label">达人佣金 <span class="en">Influencer</span></span>
+      <span class="value" id="r_influencer">-</span>
+    </div>
+    <hr class="result-divider">
+    <div class="result-total">
+      <span class="label">毛利润 <span class="en">Gross Profit</span></span>
+      <span class="value zero" id="r_profit">-</span>
+    </div>
+    <div class="profit-rate" id="r_profitRate"></div>
+  </div>
+</div>
+
+<script>
+function $(id) { return document.getElementById(id); }
+function num(id) { return parseFloat($(id).value) || 0; }
+function fmt(n) { return n.toFixed(2); }
+
+function onTaxTypeChange() {
+  var type = $('taxType').value;
+  var input = $('taxRate');
+  if (type === 'custom') {
+    input.disabled = false;
+    input.focus();
+  } else {
+    input.disabled = true;
+    input.value = type;
+  }
+}
+
+$('discountType').addEventListener('change', function() {
+  $('discountHint').textContent = this.value === 'fixed' ? '（元 CNY）' : '（%）';
+});
+
+function calc() {
+  var price = num('price');
+  if (!price) {
+    $('r_price').textContent = '-';
+    $('r_discount').textContent = '-';
+    $('r_tax').textContent = '-';
+    $('r_shipping').textContent = '-';
+    $('r_platform').textContent = '-';
+    $('r_influencer').textContent = '-';
+    $('r_profit').textContent = '-';
+    $('r_profit').className = 'value zero';
+    $('r_profitRate').textContent = '';
+    return;
+  }
+
+  var discountType = $('discountType').value;
+  var discountValue = num('discountValue');
+  var discount = discountType === 'fixed' ? discountValue : price * discountValue / 100;
+
+  var taxRate = num('taxRate') / 100;
+  var tax = price / (1 + taxRate) * taxRate;
+
+  var shipping = num('shipping');
+
+  var platformRate = num('platformRate') / 100;
+  var platform = price * platformRate;
+
+  var influencerRate = num('influencerRate') / 100;
+  var influencer = price * influencerRate;
+
+  var profit = price - discount - tax - shipping - platform - influencer;
+
+  $('r_price').textContent = fmt(price) + ' CNY';
+  $('r_discount').textContent = '- ' + fmt(discount) + ' CNY';
+  $('r_tax').textContent = '- ' + fmt(tax) + ' CNY';
+  $('r_shipping').textContent = '- ' + fmt(shipping) + ' CNY';
+  $('r_platform').textContent = '- ' + fmt(platform) + ' CNY';
+  $('r_influencer').textContent = '- ' + fmt(influencer) + ' CNY';
+
+  $('r_profit').textContent = fmt(profit) + ' CNY';
+  if (profit > 0) {
+    $('r_profit').className = 'value positive';
+  } else if (profit < 0) {
+    $('r_profit').className = 'value negative';
+  } else {
+    $('r_profit').className = 'value zero';
+  }
+
+  var rate = (profit / price * 100).toFixed(1);
+  $('r_profitRate').textContent = '毛利率 Gross Margin: ' + rate + '%';
+}
+</script>
+</body>
+</html>

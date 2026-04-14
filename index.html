@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Tools</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  padding: 20px;
+  min-height: 100vh;
+}
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+}
+h1 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 4px;
+  color: #1a1a1a;
+}
+.subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 32px;
+}
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.tool-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  text-decoration: none;
+  color: inherit;
+  transition: box-shadow 0.2s, transform 0.2s;
+  display: block;
+}
+.tool-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transform: translateY(-2px);
+}
+.tool-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+.tool-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+.tool-name-en {
+  font-size: 13px;
+  color: #aaa;
+  margin-bottom: 8px;
+}
+.tool-desc {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+}
+.footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 12px;
+  color: #ccc;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Team Tools</h1>
+  <div class="subtitle">Internal tools for the team</div>
+
+  <div class="tool-grid">
+
+    <a class="tool-card" href="profit-calculator.html">
+      <div class="tool-icon">&#x1f4b0;</div>
+      <div class="tool-name">利润计算器</div>
+      <div class="tool-name-en">Profit Calculator</div>
+      <div class="tool-desc">计算电商平台合作达人、活动优惠后的毛利润<br>Calculate gross profit after discounts, tax, commissions</div>
+    </a>
+
+    <!-- 新工具模板：复制下面这块，修改链接、图标、名称、描述即可
+    <a class="tool-card" href="new-tool.html">
+      <div class="tool-icon">&#x1f527;</div>
+      <div class="tool-name">工具名称</div>
+      <div class="tool-name-en">Tool Name</div>
+      <div class="tool-desc">工具描述<br>Tool description</div>
+    </a>
+    -->
+
+  </div>
+
+  <div class="footer">Team Tools &copy; 2026</div>
+</div>
+</body>
+</html>
